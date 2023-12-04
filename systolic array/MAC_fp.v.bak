@@ -1,0 +1,44 @@
+module MAC_fp #(
+	parameter word_size = 20,
+	parameter fractional_bits = 8
+)(
+	a,
+	b,
+	a_fwd,
+	b_fwd,
+	out,
+	clk,
+	clear
+);
+
+input [0:word_size-1] a,b;
+input clk;
+input clear;
+
+output reg [0:word_size-1] out;
+output reg [0:word_size-1] a_fwd,b_fwd;
+
+wire [0:word_size-1] mult_out;
+wire [0:word_size-1] adder_out;
+wire overflow;
+
+qmult #(word_size,fractional_bits) mul(a,b,mult_out,overflow);            //The fixed-point multiplier module
+qadd  #(word_size,fractional_bits) add(mult_out,out,adder_out);          //The fixed-point adder module
+
+always @(posedge clk)
+begin
+ if(clear)
+ begin
+  a_fwd <= {word_size{1'b0}};
+  b_fwd <= {word_size{1'b0}};
+  out <= {word_size{1'b0}};
+ end
+ else
+ begin
+  a_fwd <= a;
+  b_fwd <= b;
+  out <= adder_out;
+ end
+end
+endmodule
+

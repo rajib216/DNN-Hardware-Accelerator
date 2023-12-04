@@ -1,0 +1,188 @@
+
+`timescale 1ns/1ps
+
+module systolic_array_tb();
+
+parameter in_word_size = 8;
+parameter out_word_size = 24;
+
+parameter arr1_rows = 64;
+parameter arr1_cols = 27;
+parameter arr2_rows = 27;
+parameter arr2_cols = 10;
+
+parameter arr_rows = arr1_rows;
+parameter arr_cols = arr2_cols;
+
+reg clk;
+reg reset;
+
+reg [in_word_size-1:0] left_inputs [0:arr1_rows*arr1_cols-1]; 
+reg [in_word_size-1:0] top_inputs [0:arr2_rows*arr2_cols-1];
+reg [out_word_size-1:0] valid_results [0:arr_rows*arr_cols-1];
+
+reg [in_word_size*arr_rows-1:0] left_inputs_wire;
+reg [in_word_size*arr_cols-1:0] top_inputs_wire;
+
+wire compute_done_out;
+wire [out_word_size-1:0] cycles_count_out;
+
+wire [out_word_size-1:0] pe_register_vals_mem [0:arr_rows*arr_cols-1];
+
+reg [out_word_size-1:0] convolution_output [0:arr_rows*arr_cols-1];
+
+wire [0:out_word_size*arr_cols*arr_rows-1] pe_register_vals_wire;
+
+
+integer i,j,k;
+integer row,col;
+
+initial begin
+clk = 1'b0;
+reset = 1'b1;
+row = -1;
+col = -1;
+
+$readmemh("E:/Modelsim_projects/Systolic Array (Rectangular MXU)/Test3/Lin_M.dat",left_inputs);
+$readmemh("E:/Modelsim_projects/Systolic Array (Rectangular MXU)/Test3/Tin_N.dat",top_inputs);
+$readmemh("E:/Modelsim_projects/Systolic Array (Rectangular MXU)/Test3/valid_results.dat",valid_results);
+
+#20 reset = 1'b0;
+end
+
+always #5 clk = ~clk;
+
+genvar r,c;
+generate
+for(r=0; r<arr1_rows; r=r+1)
+begin:Lin
+always @(posedge clk or posedge reset)
+begin
+if(reset == 1'b1)
+begin
+left_inputs_wire[(r+1)*in_word_size-1 -: (in_word_size)] <= {in_word_size{1'b0}};
+end
+else
+begin
+if(col < arr1_cols)
+begin
+left_inputs_wire[(r+1)*in_word_size-1 -: (in_word_size)] <= left_inputs[(col*arr1_rows)+r];
+end
+else
+begin
+left_inputs_wire[(r+1)*in_word_size-1 -: (in_word_size)] <= {in_word_size{1'b0}};
+end
+end
+end
+end
+endgenerate
+
+generate
+for(c=0; c<arr2_cols; c=c+1)
+begin:Tin
+always @(posedge clk or posedge reset)
+begin
+if(reset == 1'b1)
+begin
+top_inputs_wire[(c+1)*in_word_size-1 -: (in_word_size)] <= {in_word_size{1'b0}};
+end
+else
+begin
+if(row < arr2_rows)
+begin
+top_inputs_wire[(c+1)*in_word_size-1 -: (in_word_size)] <= top_inputs[(row*arr2_cols)+c];
+end
+else
+begin
+top_inputs_wire[(c+1)*in_word_size-1 -: (in_word_size)] <= {in_word_size{1'b0}};
+end
+end
+end
+end
+endgenerate
+
+always @(posedge clk or negedge reset)
+begin
+if(reset == 1'b1)
+begin
+row <= -1;
+col <= -1;
+end
+else
+begin
+row <= row+1;
+col <= col+1;
+end
+end
+
+generate
+    for(r=0; r<arr_rows * arr_cols; r=r+1)
+    begin:pe_reg
+        assign pe_register_vals_mem[r] = pe_register_vals_wire[r* out_word_size: (r+1)* out_word_size -1];
+    end
+endgenerate
+
+
+reg [0 : arr_rows*arr_cols-1] count = 0;
+always @(posedge clk)
+begin 
+    if(compute_done_out == 1'b1)
+    begin
+	if(count < arr_cols*arr_rows)
+	begin
+        for(i=0; i< arr_cols; i=i+1)
+        begin
+            for (j=0; j< arr_rows; j=j+1)
+            begin
+                convolution_output[count] = pe_register_vals_mem[j*arr_cols + i];
+		count = count + 1;
+	    end
+	end
+    	$writememh("E:/Modelsim_projects/Systolic Array (Rectangular MXU)/Test3/test_results.dat",convolution_output);
+	end
+   end
+end
+
+reg flag = 0;
+
+always @(posedge clk)
+begin
+if(compute_done_out == 1'b1)
+begin
+if(!flag)
+begin
+for(k=0; k<arr_rows*arr_cols; k=k+1)
+begin
+if(convolution_output[k] != valid_results[k])
+begin
+flag = 1;
+end
+end
+end
+end
+end
+
+always @(flag)
+case(flag)
+0: $display("All outputs match the valid convolution results properly.");
+1: $display("Error!");
+default: $display("Checking...");
+endcase
+
+
+systolic_array #(
+	.in_word_size(in_word_size),
+	.out_word_size(out_word_size),
+	.num_row(arr_rows),
+	.num_col(arr_cols)
+) dut(
+	.clk(clk),
+	.reset(reset),
+	.left_inputs(left_inputs_wire),
+	.top_inputs(top_inputs_wire),
+	.compute_done(compute_done_out),
+        .cycles_count(cycles_count_out),
+	.pe_register_vals(pe_register_vals_wire)
+);
+
+endmodule 

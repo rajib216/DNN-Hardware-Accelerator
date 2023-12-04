@@ -1,0 +1,100 @@
+
+module systolic_array #(
+	parameter num_row = 3,
+	parameter num_col = 3,
+	parameter in_word_size = 8,
+	parameter out_word_size = 16
+)(
+	clk,
+	reset,
+	left_inputs,
+	top_inputs,
+
+	compute_done,
+	cycles_count,
+	pe_register_vals
+);
+
+input clk;
+input reset;
+
+input [0 : num_row*in_word_size-1] left_inputs;
+input [0 : num_col*in_word_size-1] top_inputs;
+
+output reg compute_done;
+output reg  [out_word_size-1:0] cycles_count;
+output [0 : out_word_size*num_row*num_col-1] pe_register_vals;
+
+wire [0:(num_col+num_row*num_col)*in_word_size-1] top_fwd;
+wire [0:(num_row+num_col*num_row)*in_word_size-1] left_fwd;
+
+assign left_fwd[0:in_word_size-1] = left_inputs[in_word_size*(num_row-1):in_word_size*num_row-1];
+assign top_fwd[0:in_word_size-1] = top_inputs[in_word_size*(num_col-1):in_word_size*(num_col)-1];
+
+genvar row,col;
+generate 
+for(row=1; row<num_row; row=row+1)
+begin:Lin_buffer
+ buffern #(
+	.word_size(in_word_size),
+	.length(row)
+	) buffer_inst_r(
+	.in(left_inputs[in_word_size*(num_row-1-row):in_word_size*(num_row-row)-1]),
+	.out(left_fwd[in_word_size*(row):in_word_size*(row+1)-1]),
+	.clk(clk),
+	.clear(reset)
+	);
+end
+
+for(col=1; col<num_col; col=col+1)
+begin:Tin_buffer
+ buffern #(
+	.word_size(in_word_size),
+	.length(col)
+	) buffer_inst_c(
+	.in(top_inputs[in_word_size*(num_col-1-col):in_word_size*(num_col-col)-1]),
+	.out(top_fwd[in_word_size*(col):in_word_size*(col+1)-1]),
+	.clk(clk),
+	.clear(reset)
+	);
+end
+
+for(row=0; row<num_row; row=row+1)
+begin:row_in
+for(col=0; col<num_col; col=col+1)
+begin:col_in
+MAC #(
+   .in_word_size(in_word_size),
+   .out_word_size(out_word_size)
+   ) mac_inst(
+	.a(left_fwd[in_word_size*(row+col*num_row):in_word_size*(row+1+col*num_row)-1]),
+	.b(top_fwd[in_word_size*(col+row*num_col):in_word_size*(col+1+row*num_col)-1]),
+	.a_fwd(left_fwd[in_word_size*(row+(col+1)*num_row):in_word_size*(row+1+(col+1)*num_row)-1]),
+	.b_fwd(top_fwd[in_word_size*(col+(row+1)*num_col):in_word_size*(col+1+(row+1)*num_col)-1]),
+	.out(pe_register_vals[out_word_size*(row*num_col+col):out_word_size*(row*num_col+col+1)-1]),
+	.clk(clk),
+	.clear(reset)
+	);
+end
+end
+endgenerate
+
+always @(posedge clk)
+begin
+    if(reset==1'b1)
+    begin
+        compute_done <= 1'b0;
+        cycles_count <= 0;
+    end
+    else
+    begin
+		cycles_count <= cycles_count + 1;
+		if(cycles_count > (10+num_row*num_col))
+		begin
+			compute_done <= 1'b1;
+      end
+        //compute_done <= 1'b1;
+    end
+end
+
+endmodule 

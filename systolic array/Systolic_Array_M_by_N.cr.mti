@@ -1,0 +1,50 @@
+{E:/Modelsim_projects/Systolic Array (Rectangular MXU)/MAC.v} {1 {vlog -work work -stats=none {E:/Modelsim_projects/Systolic Array (Rectangular MXU)/MAC.v}
+Model Technology ModelSim PE Student Edition vlog 10.4a Compiler 2015.03 Apr  7 2015
+-- Compiling module MAC
+
+Top level modules:
+	MAC
+
+} {} {}} {E:/Modelsim_projects/Systolic Array (Rectangular MXU)/qadd.v} {1 {vlog -work work -stats=none {E:/Modelsim_projects/Systolic Array (Rectangular MXU)/qadd.v}
+Model Technology ModelSim PE Student Edition vlog 10.4a Compiler 2015.03 Apr  7 2015
+-- Compiling module qadd
+
+Top level modules:
+	qadd
+
+} {} {}} {E:/Modelsim_projects/Systolic Array (Rectangular MXU)/MAC_fp.v} {1 {vlog -work work -stats=none {E:/Modelsim_projects/Systolic Array (Rectangular MXU)/MAC_fp.v}
+Model Technology ModelSim PE Student Edition vlog 10.4a Compiler 2015.03 Apr  7 2015
+-- Compiling module MAC_fp
+
+Top level modules:
+	MAC_fp
+
+} {} {}} {E:/Modelsim_projects/Systolic Array (Rectangular MXU)/qmult.v} {1 {vlog -work work -stats=none {E:/Modelsim_projects/Systolic Array (Rectangular MXU)/qmult.v}
+Model Technology ModelSim PE Student Edition vlog 10.4a Compiler 2015.03 Apr  7 2015
+-- Compiling module qmult
+
+Top level modules:
+	qmult
+
+} {} {}} {E:/Modelsim_projects/Systolic Array (Rectangular MXU)/buffer1.v} {1 {vlog -work work -stats=none {E:/Modelsim_projects/Systolic Array (Rectangular MXU)/buffer1.v}
+Model Technology ModelSim PE Student Edition vlog 10.4a Compiler 2015.03 Apr  7 2015
+-- Compiling module buffer1
+
+Top level modules:
+	buffer1
+
+} {} {}} {E:/Modelsim_projects/Systolic Array (Rectangular MXU)/systolic_array.v} {1 {vlog -work work -stats=none {E:/Modelsim_projects/Systolic Array (Rectangular MXU)/systolic_array.v}
+Model Technology ModelSim PE Student Edition vlog 10.4a Compiler 2015.03 Apr  7 2015
+-- Compiling module systolic_array
+
+Top level modules:
+	systolic_array
+
+} {} {}} {E:/Modelsim_projects/Systolic Array (Rectangular MXU)/buffern.v} {1 {vlog -work work -stats=none {E:/Modelsim_projects/Systolic Array (Rectangular MXU)/buffern.v}
+Model Technology ModelSim PE Student Edition vlog 10.4a Compiler 2015.03 Apr  7 2015
+-- Compiling module buffern
+
+Top level modules:
+	buffern
+
+} {} {}}
