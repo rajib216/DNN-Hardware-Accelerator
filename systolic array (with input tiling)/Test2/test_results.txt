@@ -1,0 +1,12 @@
+// memory data file (do not edit the following line - required for mem load use)
+// instance=/systolic_array_tb/convolution_output
+// format=hex addressradix=h dataradix=h version=1.0 wordsperline=1 noaddress
+000037
+000091
+0000eb
+00002d
+00007e
+0000cf
+000035
+0000ad
+000125
